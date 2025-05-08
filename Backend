@@ -148,38 +148,38 @@ def signup():
     if not email or not category:
         return jsonify({"error": "Missing email or category"}), 400
 
-    # Debugging output
+   
     print(f"Email: {email}, Category: {category}")
 
-    # Ensure category is correctly processed
+    
     valid_categories = {
         "Cardiologists & Stroke Specialists": "Cardiologists & Stroke Specialists",
         "Diabetic & Hypertensive Patients": "Diabetic & Hypertensive Patients",
         "Optometrists & Eye Clinics": "Optometrists & Eye Clinics"
     }
     
-    # Standardizing the input category
+   
     if category in valid_categories:
         category = valid_categories[category]  
 
-    # Check if category is valid
+    
     if category not in valid_categories.values():
         return jsonify({"error": "Invalid category"}), 400
 
-    # Proceed with user registration
+    
     user = User.query.filter_by(email=email).first()
     if user:
         return jsonify({"error": "User already exists"}), 409
 
-    # Generate OTP
+    
     otp = str(random.randint(100000, 999999))
 
-    # Save to database
+    
     new_user = User(email=email, otp=otp, category=category)
     db.session.add(new_user)
     db.session.commit()
 
-    # Send OTP via email
+    
     try:
         msg = Message("Your OTP Code", sender=app.config['MAIL_USERNAME'], recipients=[email])
         msg.body = f"Your OTP code is: {otp}"
@@ -209,17 +209,17 @@ def validate_otp():
         if password != confirm_password:
             return jsonify({"error": "Passwords don't match"}), 400
 
-        # Find user by email & OTP
+        
         user = User.query.filter_by(email=email, otp=otp).first()
         if not user:
             return jsonify({"error": "Invalid OTP/Email"}), 400
 
-        # ✅ Store password as a hashed value
-        hashed_password = generate_password_hash(password)  # ✅ Correct hashing
+       
+        hashed_password = generate_password_hash(password)  
         print(f"🔑 Hashed Password Before Storing in DB: {hashed_password}")
 
         user.password = hashed_password
-        user.otp = None  # Clear OTP after successful validation
+        user.otp = None  
         db.session.commit()
 
         print("✅ Registration successful! Hashed password stored.")
@@ -290,26 +290,26 @@ def login():
     try:
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Invalid JSON data"}), 400  # ✅ Correct
+            return jsonify({"error": "Invalid JSON data"}), 400  
 
         email = data.get("email", "").strip()
         password = data.get("password", "").strip()
 
         if not email or not password:
-            return jsonify({"error": "Email and Password are required"}), 400  # ✅ Correct
+            return jsonify({"error": "Email and Password are required"}), 400  
 
         user = User.query.filter_by(email=email).first()
         if not user:
-            return jsonify({"error": "Invalid credentials"}), 401  # ✅ Correct
+            return jsonify({"error": "Invalid credentials"}), 401  
 
         if check_password_hash(user.password, password):
-            return jsonify({"success": True, "message": "Login successful"}), 200  # ✅ Correct
+            return jsonify({"success": True, "message": "Login successful"}), 200 
         else:
-            return jsonify({"error": "Invalid credentials"}), 401  # ✅ Correct
+            return jsonify({"error": "Invalid credentials"}), 401  
 
     except Exception as e:
         print(f"⚠ Login error: {e}")
-        return jsonify({"error": "Server error. Please try again later."}), 500  # ✅ Correct
+        return jsonify({"error": "Server error. Please try again later."}), 500  
 
 
 @app.route("/predict", methods=["POST"])
